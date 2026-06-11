@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineHub Preview – Discover, Experience & Book Entertainment</title>
+  <!-- Tailwind CSS for rapid layout styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React and ReactDOM CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel CDN to compile JSX in browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.244.0"></script>
+  
+  <style>
+    body {
+      background-color: #0F172A;
+      color: #FFFFFF;
+      font-family: 'Outfit', 'Inter', sans-serif;
+    }
+    .text-gradient {
+      background: linear-gradient(135deg, #A78BFA 0%, #F472B6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.45);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.55);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(124, 58, 237, 0.5);
+      box-shadow: 0 12px 30px rgba(124, 58, 237, 0.25);
+    }
+    /* Hide scrollbar */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: '#0F172A',
+            purple: '#7C3AED',
+            pink: '#EC4899',
+            slatecard: '#1E293B',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- MOCK DATABASE ---
+    const INITIAL_MOVIES = [
+      {
+        id: "m1",
+        title: "Interstellar",
+        poster: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=600&auto=format&fit=crop&q=80",
+        language: "English",
+        duration: 169,
+        genre: "Sci-Fi, Adventure, Drama",
+        rating: 9.2,
+        votes: 14200,
+        synopsis: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival. Faced with resource depletion on Earth, astronauts venture into the unknown deep space.",
+        mood: "Excited",
+        price: 15.0,
+        theatre: "PVR Infiniti Mall, Mumbai",
+        time: "06:00 PM"
+      },
+      {
+        id: "m2",
+        title: "La La Land",
+        poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&auto=format&fit=crop&q=80",
+        language: "English",
+        duration: 128,
+        genre: "Romance, Musical, Drama",
+        rating: 8.6,
+        votes: 9500,
+        synopsis: "While navigating their careers in Los Angeles, a pianist and an actress fall in love while attempting to reconcile their aspirations for the future.",
+        mood: "Romantic",
+        price: 12.5,
+        theatre: "Cinepolis Forum Mall, Bengaluru",
+        time: "08:30 PM"
+      },
+      {
+        id: "m3",
+        title: "The Conjuring",
+        poster: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=600&auto=format&fit=crop&q=80",
+        language: "English",
+        duration: 112,
+        genre: "Horror, Mystery, Thriller",
+        rating: 7.8,
+        votes: 8100,
+        synopsis: "Paranormal investigators Ed and Lorraine Warren work to help a family terrorized by a dark presence in their farmhouse.",
+        mood: "Scared",
+        price: 11.0,
+        theatre: "IMAX Palladium, Mumbai",
+        time: "10:00 PM"
+      },
+      {
+        id: "m4",
+        title: "The Hangover",
+        poster: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=600&auto=format&fit=crop&q=80",
+        language: "English",
+        duration: 100,
+        genre: "Comedy",
+        rating: 8.0,
+        votes: 11000,
+        synopsis: "Three buddies wake up from a bachelor party in Las Vegas, with no memory of the previous night and the bachelor missing.",
+        mood: "Happy",
+        price: 10.0,
+        theatre: "PVR Plaza Connaught Place, New Delhi",
+        time: "02:00 PM"
+      }
+    ];
+
+    const INITIAL_EVENTS = [
+      {
+        id: "e1",
+        title: "Coldplay BKC Music Festival",
+        category: "Music Shows",
+        banner: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&auto=format&fit=crop&q=80",
+        description: "Experience Coldplay live in India performing their greatest hits. A night full of lights, colours, and cosmic music.",
+        venue: "Jio World Garden BKC, Mumbai",
+        date: "2026-06-25",
+        price: 150.0
+      },
+      {
+        id: "e2",
+        title: "Zakir Khan Standup Live",
+        category: "Comedy Shows",
+        banner: "https://images.unsplash.com/photo-1585699324551-f6c309eed262?w=600&auto=format&fit=crop&q=80",
+        description: "The 'Sakht Launda' is back with fresh jokes. Get ready for a highly relatable comedy session.",
+        venue: "The Comedy Store, Bengaluru",
+        date: "2026-06-15",
+        price: 35.0
+      }
+    ];
+
+    const INITIAL_SPORTS = [
+      {
+        id: "s1",
+        title: "IPL: Mumbai Indians vs Chennai Super Kings",
+        banner: "https://images.unsplash.com/photo-1540747737956-378723c03095?w=600&auto=format&fit=crop&q=80",
+        description: "The ultimate cricket rivalry resumes at Wankhede Stadium. Watch the titans clash live.",
+        venue: "Wankhede Stadium, Mumbai",
+        date: "2026-06-28",
+        price: 45.0
+      }
+    ];
+
+    function CineHubApp() {
+      // SPA routing state
+      const [page, setPage] = useState('dashboard'); // dashboard, movie, booking, groupbooking, profile, admin, login
+      const [selectedItemId, setSelectedItemId] = useState('m1');
+      const [selectedItemType, setSelectedItemType] = useState('movie'); // movie, event, sports
+      
+      // Global States
+      const [user, setUser] = useState({
+        fullName: "John Doe",
+        email: "user@cinehub.com",
+        rewards: 100
+      });
+      const [isLoggedIn, setIsLoggedIn] = useState(true);
+      const [selectedCity, setSelectedCity] = useState("Mumbai");
+      const [searchQuery, setSearchQuery] = useState("");
+      const [searchCategory, setSearchCategory] = useState("Movies");
+
+      // Seat layout booking page state
+      const [seatGrid, setSeatGrid] = useState({});
+      const [selectedSeats, setSelectedSeats] = useState([]);
+      const [isReserveOnly, setIsReserveOnly] = useState(false);
+
+      // Group booking details state
+      const [groupBookings, setGroupBookings] = useState({
+        "GB101": {
+          id: "GB101",
+          showTitle: "Interstellar",
+          showPlace: "PVR Infiniti Mall, Mumbai",
+          time: "06:00 PM",
+          price: 15.0,
+          members: [
+            { name: "Alice (Organizer)", seats: ["A1"] },
+            { name: "Bob (Joined Friend)", seats: ["A2"] }
+          ]
+        }
+      });
+      const [activeGroupCode, setActiveGroupCode] = useState("GB101");
+      const [friendName, setFriendName] = useState("");
+
+      // Orders, GiftCards list
+      const [orders, setOrders] = useState([
+        {
+          id: "B8F79",
+          title: "Interstellar",
+          place: "PVR Infiniti Mall, Mumbai",
+          seats: "A5, A6",
+          price: 30.0,
+          status: "Confirmed",
+          date: "June 10, 2026 - 06:00 PM",
+          qr: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CineHub-B8F79"
+        }
+      ]);
+      const [giftCards, setGiftCards] = useState([
+        { code: "CINE100", value: 100.0, redeemed: false }
+      ]);
+      const [rewardHistory, setRewardHistory] = useState([
+        { desc: "Welcome Bonus Points", points: 100, date: "June 08, 2026" }
+      ]);
+
+      // Sentiment reviews state
+      const [reviews, setReviews] = useState({
+        "m1": [
+          { name: "Alice Test", rating: 10, comment: "Absolutely mind-bending! Christopher Nolan is a genius. The music by Hans Zimmer is amazing.", sentiment: "Positive" }
+        ]
+      });
+      const [reviewRating, setReviewRating] = useState(10);
+      const [reviewComment, setReviewComment] = useState("");
+
+      // Filters
+      const [selectedMood, setSelectedMood] = useState("");
+      const [budgetLimit, setBudgetLimit] = useState(200);
+
+      // Hero index
+      const [heroIndex, setHeroIndex] = useState(0);
+
+      // Auto rotation for hero banner
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setHeroIndex((prev) => (prev + 1) % INITIAL_MOVIES.length);
+        }, 8000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const activeHero = INITIAL_MOVIES[heroIndex];
+
+      // Reset layout when entering booking page
+      const loadBookingLayout = (itemId, type) => {
+        setSelectedItemId(itemId);
+        setSelectedItemType(type);
+        setSelectedSeats([]);
+        setPage('booking');
+      };
+
+      const handleSeatClick = (row, col) => {
+        const code = `${row}${col}`;
+        // check if already booked in mock grid
+        if (code === "A1" || code === "A2" || code === "C3" || code === "D4") return; 
+
+        if (selectedSeats.includes(code)) {
+          setSelectedSeats(selectedSeats.filter(s => s !== code));
+        } else {
+          setSelectedSeats([...selectedSeats, code]);
+        }
+      };
+
+      const processBooking = (reserveMode = false) => {
+        if (!isLoggedIn) {
+          setPage('login');
+          return;
+        }
+        if (selectedSeats.length === 0) {
+          alert("Please select at least one seat first!");
+          return;
+        }
+
+        const target = selectedItemType === 'movie' 
+          ? INITIAL_MOVIES.find(m => m.id === selectedItemId)
+          : (selectedItemType === 'event' ? INITIAL_EVENTS.find(e => e.id === selectedItemId) : INITIAL_SPORTS.find(s => s.id === selectedItemId));
+
+        const totalPrice = target.price * selectedSeats.length;
+
+        if (reserveMode) {
+          // Reserve (Book Later)
+          const newOrder = {
+            id: Math.random().toString(36).substring(2, 7).toUpperCase(),
+            title: target.title,
+            place: target.theatre || target.venue,
+            seats: selectedSeats.join(", "),
+            price: totalPrice,
+            status: "Reserved",
+            date: `June 12, 2026 - ${target.time || "07:00 PM"}`,
+            qr: ""
+          };
+          setOrders([newOrder, ...orders]);
+          alert("Reservation created! Your seats are held. Please confirm and pay within 1 day before showtime.");
+          setPage('profile');
+        } else {
+          // Pay instantly
+          const newId = Math.random().toString(36).substring(2, 7).toUpperCase();
+          const newOrder = {
+            id: newId,
+            title: target.title,
+            place: target.theatre || target.venue,
+            seats: selectedSeats.join(", "),
+            price: totalPrice,
+            status: "Confirmed",
+            date: `June 12, 2026 - ${target.time || "07:00 PM"}`,
+            qr: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CineHub-${newId}`
+          };
+          setOrders([newOrder, ...orders]);
+          
+          // Earning 15 Reward Points
+          setUser({ ...user, rewards: user.rewards + 15 });
+          setRewardHistory([{ desc: `Earned from booking ${newId}`, points: 15, date: "June 08, 2026" }, ...rewardHistory]);
+
+          alert(`Booking Successful! You earned 15 reward points. Check your ticket QR code in your Profile.`);
+          setPage('profile');
+        }
+      };
+
+      const startGroupBooking = () => {
+        if (!isLoggedIn) {
+          setPage('login');
+          return;
+        }
+        if (selectedSeats.length === 0) {
+          alert("Select starting seats first!");
+          return;
+        }
+
+        const target = INITIAL_MOVIES.find(m => m.id === selectedItemId) || INITIAL_MOVIES[0];
+        const newCode = "GB" + Math.floor(100 + Math.random() * 900);
+        
+        setGroupBookings({
+          ...groupBookings,
+          [newCode]: {
+            id: newCode,
+            showTitle: target.title,
+            showPlace: target.theatre || target.venue,
+            time: target.time || "06:00 PM",
+            price: target.price,
+            members: [
+              { name: `${user.fullName} (Organizer)`, seats: selectedSeats }
+            ]
+          }
+        });
+        setActiveGroupCode(newCode);
+        setPage('groupbooking');
+      };
+
+      const joinGroupBooking = (e) => {
+        e.preventDefault();
+        if (!friendName.trim()) {
+          alert("Please enter your name!");
+          return;
+        }
+        if (!selectedSeats.length) {
+          alert("Please select a seat!");
+          return;
+        }
+
+        const currentGroup = groupBookings[activeGroupCode];
+        const updatedMembers = [
+          ...currentGroup.members,
+          { name: friendName, seats: selectedSeats }
+        ];
+
+        setGroupBookings({
+          ...groupBookings,
+          [activeGroupCode]: {
+            ...currentGroup,
+            members: updatedMembers
+          }
+        });
+        alert(`${friendName} joined the group booking!`);
+        setFriendName("");
+        setSelectedSeats([]);
+      };
+
+      const payGroupBooking = () => {
+        const currentGroup = groupBookings[activeGroupCode];
+        const totalSeatCount = currentGroup.members.reduce((acc, m) => acc + m.seats.length, 0);
+        const totalPrice = currentGroup.price * totalSeatCount;
+
+        const newId = Math.random().toString(36).substring(2, 7).toUpperCase();
+        const newOrder = {
+          id: newId,
+          title: currentGroup.showTitle,
+          place: currentGroup.showPlace,
+          seats: currentGroup.members.reduce((acc, m) => acc.concat(m.seats), []).join(", "),
+          price: totalPrice,
+          status: "Confirmed",
+          date: `June 12, 2026 - ${currentGroup.time}`,
+          qr: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CineHub-${newId}`
+        };
+
+        setOrders([newOrder, ...orders]);
+        setUser({ ...user, rewards: user.rewards + 30 });
+        setRewardHistory([{ desc: `Group Host Bonus: ${currentGroup.id}`, points: 30, date: "June 08, 2026" }, ...rewardHistory]);
+
+        alert(`Group Booking Confirmed! Single unified payment of $${totalPrice} complete. Check tickets in your Profile.`);
+        setPage('profile');
+      };
+
+      const handleAddReview = (e) => {
+        e.preventDefault();
+        if (!reviewComment.trim()) return;
+
+        // Simple sentiment check
+        const commentLower = reviewComment.toLowerCase();
+        const posWords = ['good', 'love', 'amazing', 'great', 'excellent', 'nice', 'awesome', 'best', 'superb', 'enjoyed'];
+        const negWords = ['bad', 'waste', 'worst', 'boring', 'poor', 'hate', 'terrible', 'slow'];
+        
+        let posCount = 0, negCount = 0;
+        posWords.forEach(w => { if(commentLower.includes(w)) posCount++ });
+        negWords.forEach(w => { if(commentLower.includes(w)) negCount++ });
+
+        const sentiment = posCount > negCount ? "Positive" : (negCount > posCount ? "Negative" : "Neutral");
+
+        const newRev = {
+          name: user.fullName,
+          rating: reviewRating,
+          comment: reviewComment,
+          sentiment: sentiment
+        };
+
+        const existing = reviews[selectedItemId] || [];
+        setReviews({
+          ...reviews,
+          [selectedItemId]: [newRev, ...existing]
+        });
+        setReviewComment("");
+        alert(`Review submitted! Calculated sentiment: ${sentiment}`);
+      };
+
+      return (
+        <div className="flex flex-col min-h-screen">
+          {/* HEADER */}
+          <header className="sticky top-0 z-50 bg-navy/90 backdrop-blur-md border-b border-white/10 px-6 py-4">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              
+              {/* Logo */}
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => setPage('dashboard')}>
+                <span className="text-3xl">🍿</span>
+                <span className="text-gradient text-2xl font-extrabold tracking-wider">CineHub</span>
+              </div>
+
+              {/* Global search */}
+              <div className="flex items-center bg-slatecard/60 rounded-xl px-3 py-2 border border-white/10 flex-1 max-w-lg w-full">
+                <i data-lucide="search" className="text-gray-400 mr-2 w-4 h-4"></i>
+                <input 
+                  type="text" 
+                  placeholder={`Search ${searchCategory}...`} 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-transparent text-white border-none outline-none w-full text-sm"
+                />
+              </div>
+
+              {/* Right Controls */}
+              <div className="flex items-center gap-6">
+                
+                {/* Location select */}
+                <div className="flex items-center gap-1">
+                  <i data-lucide="map-pin" className="text-pink w-4 h-4"></i>
+                  <select 
+                    value={selectedCity} 
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    className="bg-transparent text-white text-sm font-semibold border-none outline-none cursor-pointer"
+                  >
+                    <option value="Mumbai" className="bg-navy text-white">Mumbai</option>
+                    <option value="Bengaluru" className="bg-navy text-white">Bengaluru</option>
+                    <option value="New Delhi" className="bg-navy text-white">New Delhi</option>
+                    <option value="Kolkata" className="bg-navy text-white">Kolkata</option>
+                  </select>
+                </div>
+
+                {/* Profile panel / signin */}
+                {isLoggedIn ? (
+                  <div className="flex items-center gap-3">
+                    <div 
+                      onClick={() => setPage('profile')}
+                      className="w-10 h-10 rounded-full bg-purple flex items-center justify-center font-bold text-white cursor-pointer shadow-lg shadow-purple/35"
+                    >
+                      JD
+                    </div>
+                    <button 
+                      onClick={() => setPage('admin')}
+                      className="text-xs font-semibold bg-white/5 border border-white/10 text-pink px-3 py-2 rounded-lg hover:bg-white/10"
+                    >
+                      Admin Panel
+                    </button>
+                    <button 
+                      onClick={() => setIsLoggedIn(false)}
+                      className="text-xs font-semibold bg-red-600/20 text-red-500 px-3 py-2 rounded-lg hover:bg-red-600/30"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => { setIsLoggedIn(true); setPage('dashboard'); }} 
+                    className="bg-gradient-to-r from-purple to-pink px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-purple/40"
+                  >
+                    Sign In
+                  </button>
+                )}
+
+              </div>
+            </div>
+
+            {/* Categories Navigation */}
+            <div className="max-w-7xl mx-auto flex gap-6 overflow-x-auto py-2 mt-4 border-t border-white/5 no-scrollbar">
+              {['Movies', 'Stream', 'Events', 'Plays', 'Sports', 'Activities', 'Venues', 'Offers', 'Others'].map((cat) => (
+                <span
+                  key={cat}
+                  onClick={() => { setSearchCategory(cat); setPage('dashboard'); }}
+                  className={`text-sm font-medium cursor-pointer pb-1 whitespace-nowrap transition-all ${
+                    searchCategory === cat ? 'text-pink border-b-2 border-pink font-bold' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+          </header>
+
+          {/* MAIN PAGE */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
+            
+            {/* PAGE: DASHBOARD */}
+            {page === 'dashboard' && (
+              <div>
+                
+                {/* Hero Carousel */}
+                <div 
+                  className="relative h-[380px] rounded-2xl overflow-hidden mb-8 bg-cover bg-center transition-all duration-1000 shadow-xl border border-white/5"
+                  style={{ backgroundImage: `url(${activeHero.poster})` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/55 to-transparent"></div>
+                  <div className="absolute bottom-8 left-8 max-w-xl">
+                    <span className="bg-purple/40 text-purple-300 border border-purple px-3 py-1 rounded-full text-xs font-bold tracking-wider mb-3 inline-block">
+                      TRENDING NOW
+                    </span>
+                    <h1 className="text-4xl font-extrabold mb-2 text-white">{activeHero.title}</h1>
+                    <p className="text-gray-300 text-sm mb-4 line-clamp-2">{activeHero.synopsis}</p>
+                    <button 
+                      onClick={() => loadBookingLayout(activeHero.id, 'movie')}
+                      className="bg-gradient-to-r from-purple to-pink px-6 py-3 rounded-xl font-extrabold text-sm shadow-lg shadow-purple/35"
+                    >
+                      Book Tickets
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mood buttons (Only for Movies) */}
+                {searchCategory === 'Movies' && (
+                  <div className="mb-8">
+                    <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+                      <span>🎭</span> Filter by your Mood:
+                    </h2>
+                    <div className="flex gap-3 flex-wrap">
+                      {[
+                        { mood: "Happy", emoji: "😊", bg: "bg-emerald-600" },
+                        { mood: "Excited", emoji: "🤩", bg: "bg-purple" },
+                        { mood: "Romantic", emoji: "💖", bg: "bg-pink" },
+                        { mood: "Scared", emoji: "😱", bg: "bg-red-600" }
+                      ].map((m) => (
+                        <button
+                          key={m.mood}
+                          onClick={() => setSelectedMood(selectedMood === m.mood ? "" : m.mood)}
+                          className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+                            selectedMood === m.mood ? `${m.bg} border-transparent text-white` : 'bg-slatecard/50 border-white/10 hover:bg-slatecard'
+                          }`}
+                        >
+                          <span className="mr-1">{m.emoji}</span> {m.mood}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Smart Budget Filter slider */}
+                <div className="glass-panel p-4 mb-8 max-w-sm flex flex-col gap-2">
+                  <div className="flex justify-between items-center text-xs font-semibold">
+                    <span className="text-gray-400">Smart Budget Filter</span>
+                    <span className="text-pink font-bold">Max: ${budgetLimit}</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="10" 
+                    max="200" 
+                    value={budgetLimit}
+                    onChange={(e) => setBudgetLimit(Number(e.target.value))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-pink"
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-500">
+                    <span>$10</span>
+                    <span>$200</span>
+                  </div>
+                </div>
+
+                {/* Grid Lists */}
+                <div>
+                  <h3 className="text-2xl font-black mb-6">Explore {searchCategory} in <span className="text-pink">{selectedCity}</span></h3>
+                  
+                  {/* Movies Render */}
+                  {searchCategory === 'Movies' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                      {INITIAL_MOVIES
+                        .filter(m => !selectedMood || m.mood === selectedMood)
+                        .filter(m => m.price <= budgetLimit)
+                        .filter(m => !searchQuery || m.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                        .map((movie) => (
+                          <div 
+                            key={movie.id} 
+                            onClick={() => { setSelectedItemId(movie.id); setSelectedItemType('movie'); setPage('movie'); }}
+                            className="glass-card rounded-2xl overflow-hidden cursor-pointer"
+                          >
+                            <img src={movie.poster} alt={movie.title} className="h-64 w-full object-cover" />
+                            <div className="p-4">
+                              <div className="flex items-center gap-1 text-yellow-500 text-xs mb-1">
+                                <i data-lucide="star" className="w-3.5 h-3.5 fill-yellow-500"></i>
+                                <span className="font-bold">{movie.rating}</span>
+                                <span className="text-gray-400">({movie.votes})</span>
+                              </div>
+                              <h4 className="font-bold text-base text-white truncate">{movie.title}</h4>
+                              <p className="text-xs text-gray-400 mt-1 truncate">{movie.genre}</p>
+                              <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                                <span className="text-pink font-bold text-sm">${movie.price}</span>
+                                <button className="bg-purple px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:bg-pink">
+                                  Select Show
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Events Render */}
+                  {searchCategory === 'Events' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      {INITIAL_EVENTS
+                        .filter(e => e.price <= budgetLimit)
+                        .filter(e => !searchQuery || e.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                        .map((event) => (
+                          <div 
+                            key={event.id}
+                            onClick={() => { setSelectedItemId(event.id); setSelectedItemType('event'); setPage('movie'); }}
+                            className="glass-card rounded-2xl overflow-hidden cursor-pointer"
+                          >
+                            <img src={event.banner} alt={event.title} className="h-44 w-full object-cover" />
+                            <div className="p-4">
+                              <span className="bg-white/10 text-gray-300 text-[10px] px-2 py-0.5 rounded-full border border-white/10 mb-2 inline-block">
+                                {event.category}
+                              </span>
+                              <h4 className="font-bold text-base text-white truncate">{event.title}</h4>
+                              <p className="text-xs text-gray-400 mt-1">{event.venue}</p>
+                              <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                                <span className="text-pink font-bold text-sm">${event.price}</span>
+                                <span className="text-xs text-gray-400">{event.date}</span>
+                              </div>
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Sports Render */}
+                  {searchCategory === 'Sports' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      {INITIAL_SPORTS
+                        .filter(s => s.price <= budgetLimit)
+                        .filter(s => !searchQuery || s.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                        .map((sport) => (
+                          <div 
+                            key={sport.id}
+                            onClick={() => { setSelectedItemId(sport.id); setSelectedItemType('sports'); setPage('movie'); }}
+                            className="glass-card rounded-2xl overflow-hidden cursor-pointer"
+                          >
+                            <img src={sport.banner} alt={sport.title} className="h-44 w-full object-cover" />
+                            <div className="p-4">
+                              <h4 className="font-bold text-base text-white truncate">{sport.title}</h4>
+                              <p className="text-xs text-gray-400 mt-1">{sport.venue}</p>
+                              <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                                <span className="text-pink font-bold text-sm">${sport.price}</span>
+                                <span className="text-xs text-gray-400">{sport.date}</span>
+                              </div>
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            )}
+
+            {/* PAGE: DETAILS */}
+            {page === 'movie' && (() => {
+              const item = selectedItemType === 'movie' 
+                ? INITIAL_MOVIES.find(m => m.id === selectedItemId)
+                : (selectedItemType === 'event' ? INITIAL_EVENTS.find(e => e.id === selectedItemId) : INITIAL_SPORTS.find(s => s.id === selectedItemId));
+
+              const itemReviews = reviews[selectedItemId] || [];
+
+              return (
+                <div>
+                  <button onClick={() => setPage('dashboard')} className="text-xs text-gray-400 mb-6 flex items-center gap-1">
+                    ← Back to Dashboard
+                  </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Image / Trailer */}
+                    <div className="md:col-span-1">
+                      <img src={item.poster || item.banner} alt={item.title} className="rounded-2xl w-full object-cover h-[400px] shadow-lg" />
+                    </div>
+
+                    {/* Metadata details */}
+                    <div className="md:col-span-2">
+                      <h2 className="text-4xl font-extrabold mb-2">{item.title}</h2>
+                      <div className="flex items-center gap-3 text-sm text-gray-400 mb-4">
+                        {item.rating && (
+                          <span className="flex items-center gap-1 text-yellow-500 font-bold">
+                            <i data-lucide="star" className="w-4 h-4 fill-yellow-500"></i> {item.rating} / 10
+                          </span>
+                        )}
+                        {item.duration && <span>{item.duration} mins</span>}
+                        {item.language && <span className="text-purple font-semibold">{item.language}</span>}
+                        {item.category && <span className="bg-white/10 px-2 py-0.5 rounded-full text-xs">{item.category}</span>}
+                      </div>
+
+                      <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                        {item.synopsis || item.description}
+                      </p>
+
+                      <div className="glass-panel p-4 mb-6">
+                        <h4 className="text-xs font-bold text-gray-400 mb-1">AVAILABLE OFFERS</h4>
+                        <p className="text-xs text-pink">Use code CINE100 during checkout to redeem gift card discounts.</p>
+                      </div>
+
+                      {/* Shows schedules */}
+                      <div className="mb-8">
+                        <h4 className="text-base font-bold mb-4">Select Show Schedule</h4>
+                        <div className="glass-panel p-4 flex flex-col gap-4">
+                          <div className="flex items-center gap-2">
+                            <i data-lucide="map-pin" className="text-pink w-4 h-4"></i>
+                            <span className="text-sm font-semibold">{item.theatre || item.venue}</span>
+                          </div>
+                          <div className="flex gap-3">
+                            <button 
+                              onClick={() => { setIsReserveOnly(false); loadBookingLayout(item.id, selectedItemType); }}
+                              className="bg-purple text-white px-5 py-3 rounded-xl text-xs font-extrabold hover:bg-pink flex flex-col items-center"
+                            >
+                              <span>{item.time || "07:00 PM"}</span>
+                              <span className="text-[10px] text-purple-200 mt-1">${item.price}</span>
+                            </button>
+                            <button 
+                              onClick={() => { setIsReserveOnly(true); loadBookingLayout(item.id, selectedItemType); }}
+                              className="border border-yellow-600 bg-yellow-600/10 text-yellow-500 px-5 py-3 rounded-xl text-xs font-extrabold hover:bg-yellow-600 hover:text-white flex flex-col items-center"
+                            >
+                              <span>Reserve Seats</span>
+                              <span className="text-[10px] mt-1">Book Later Mode</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Reviews comments */}
+                      <div className="mt-8 border-t border-white/10 pt-6">
+                        <h4 className="text-xl font-bold mb-4">User reviews ({itemReviews.length})</h4>
+                        
+                        {/* Review form */}
+                        <form onSubmit={handleAddReview} className="glass-panel p-4 mb-6 flex flex-col gap-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-400">Rating:</span>
+                            <select 
+                              value={reviewRating} 
+                              onChange={(e) => setReviewRating(Number(e.target.value))}
+                              className="bg-navy text-white text-xs border border-white/10 px-2 py-1 rounded"
+                            >
+                              {[10,9,8,7,6,5,4,3,2,1].map(v => <option key={v} value={v}>{v}/10</option>)}
+                            </select>
+                          </div>
+                          <textarea 
+                            placeholder="Write your review comments here..." 
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            className="bg-navy/40 text-sm border border-white/10 rounded-lg p-3 text-white outline-none w-full"
+                          />
+                          <button type="submit" className="bg-gradient-to-r from-purple to-pink px-4 py-2 rounded-lg text-xs font-bold text-white self-end">
+                            Post Review
+                          </button>
+                        </form>
+
+                        <div className="flex flex-col gap-4">
+                          {itemReviews.map((r, i) => (
+                            <div key={i} className="glass-panel p-4 text-sm">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-bold">{r.name}</span>
+                                <span className="text-xs text-yellow-500 font-bold">★ {r.rating}/10</span>
+                              </div>
+                              <p className="text-gray-300 text-xs">{r.comment}</p>
+                              <div className="mt-2 text-[10px] text-pink font-semibold">
+                                Sentiment: {r.sentiment}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* PAGE: BOOKING SEAT SELECTOR */}
+            {page === 'booking' && (() => {
+              const item = selectedItemType === 'movie' 
+                ? INITIAL_MOVIES.find(m => m.id === selectedItemId)
+                : (selectedItemType === 'event' ? INITIAL_EVENTS.find(e => e.id === selectedItemId) : INITIAL_SPORTS.find(s => s.id === selectedItemId));
+
+              const rows = ['A', 'B', 'C', 'D', 'E'];
+              const cols = [1,2,3,4,5,6,7,8,9,10];
+
+              return (
+                <div>
+                  <button onClick={() => setPage('movie')} className="text-xs text-gray-400 mb-6">
+                    ← Back to Details
+                  </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    {/* Interactive Seat map */}
+                    <div className="md:col-span-2 glass-panel p-6 flex flex-col items-center">
+                      <div className="w-full text-center text-xs tracking-widest text-gray-500 mb-6">SCREEN THIS WAY</div>
+                      <div className="h-1 w-2/3 bg-purple mb-8 rounded-full shadow-lg shadow-purple/40"></div>
+
+                      <div className="flex flex-col gap-3 w-full max-w-md">
+                        {rows.map((row) => (
+                          <div key={row} className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-gray-500">{row}</span>
+                            <div className="flex gap-2">
+                              {cols.map((col) => {
+                                const code = `${row}${col}`;
+                                // mock booked seats
+                                const isBooked = code === "A1" || code === "A2" || code === "C3" || code === "D4";
+                                const isSelected = selectedSeats.includes(code);
+
+                                return (
+                                  <div
+                                    key={col}
+                                    onClick={() => !isBooked && handleSeatClick(row, col)}
+                                    className={`w-6 h-6 rounded text-[9px] font-bold flex items-center justify-center cursor-pointer transition-all ${
+                                      isBooked ? 'bg-red-600 text-white cursor-not-allowed' :
+                                      (isSelected ? 'bg-pink text-white scale-110 shadow-lg shadow-pink/35' : 'bg-emerald-600 text-white hover:bg-purple')
+                                    }`}
+                                  >
+                                    {col}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <span className="text-xs font-bold text-gray-500">{row}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-4 mt-8 text-xs text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3.5 h-3.5 bg-emerald-600 rounded"></div> <span>Available</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3.5 h-3.5 bg-red-600 rounded"></div> <span>Booked</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3.5 h-3.5 bg-pink rounded"></div> <span>Selected</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Booking sidebar panel */}
+                    <div className="md:col-span-1">
+                      <div className="glass-panel p-5">
+                        <h4 className="text-lg font-bold mb-4">Summary</h4>
+                        <div className="text-sm font-semibold text-white">{item.title}</div>
+                        <div className="text-xs text-gray-400 mt-1">{item.theatre || item.venue}</div>
+                        <div className="text-xs text-gray-400">{item.time || "07:00 PM"}</div>
+
+                        <DividerLine />
+
+                        <div className="flex justify-between text-xs text-gray-400 mb-2">
+                          <span>Seats Selected:</span>
+                          <span className="font-bold text-white">{selectedSeats.join(", ") || "None"}</span>
+                        </div>
+
+                        <div className="flex justify-between text-xs text-gray-400 mb-4">
+                          <span>Total Price:</span>
+                          <span className="font-extrabold text-pink text-lg">${(selectedSeats.length * item.price).toFixed(2)}</span>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          {isReserveOnly ? (
+                            <button 
+                              onClick={() => processBooking(true)}
+                              className="bg-yellow-600 py-3 rounded-xl text-xs font-extrabold text-white shadow-lg shadow-yellow-600/35"
+                            >
+                              Reserve Seats (Book Later)
+                            </button>
+                          ) : (
+                            <>
+                              <button 
+                                onClick={() => processBooking(false)}
+                                className="bg-gradient-to-r from-purple to-pink py-3 rounded-xl text-xs font-extrabold text-white shadow-lg shadow-purple/35"
+                              >
+                                Proceed to Payment
+                              </button>
+                              <button 
+                                onClick={startGroupBooking}
+                                className="border border-purple text-purple px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-purple hover:text-white"
+                              >
+                                Start Group Booking Planner
+                              </button>
+                            </>
+                          )}
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* PAGE: GROUP BOOKING PLANNER */}
+            {page === 'groupbooking' && (() => {
+              const gb = groupBookings[activeGroupCode];
+
+              return (
+                <div>
+                  <button onClick={() => setPage('dashboard')} className="text-xs text-gray-400 mb-6">
+                    ← Cancel Group Booking
+                  </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    {/* Invite details */}
+                    <div className="md:col-span-1">
+                      <div className="glass-panel p-5 mb-6">
+                        <h4 className="text-lg font-bold mb-4 flex items-center gap-2">
+                          <span>👥</span> Group Planner
+                        </h4>
+                        <div className="text-sm font-bold text-white mb-1">{gb.showTitle}</div>
+                        <div className="text-xs text-gray-400">{gb.showPlace}</div>
+
+                        <DividerLine />
+
+                        {/* Invite Code box */}
+                        <div className="bg-purple/10 border border-purple/20 p-3 rounded-xl text-center mb-4">
+                          <div className="text-xs text-gray-400 mb-1">Share Code with Friends:</div>
+                          <div className="text-xl font-black text-gradient tracking-widest">{gb.id}</div>
+                        </div>
+
+                        {/* Joined list */}
+                        <h5 className="text-sm font-bold mb-3 text-white">Joined members:</h5>
+                        <div className="flex flex-col gap-2">
+                          {gb.members.map((m, i) => (
+                            <div key={i} className="flex justify-between items-center text-xs bg-white/5 border border-white/5 p-2 rounded">
+                              <span className="font-semibold">{m.name}</span>
+                              <span className="text-pink font-bold">Seats: {m.seats.join(", ")}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <DividerLine />
+
+                        {/* Host checkouts */}
+                        <button 
+                          onClick={payGroupBooking}
+                          className="bg-gradient-to-r from-purple to-pink w-full py-3 rounded-xl text-xs font-extrabold text-white"
+                        >
+                          Checkout for all Group
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Friend seat selector */}
+                    <div className="md:col-span-2">
+                      <form onSubmit={joinGroupBooking} className="glass-panel p-6 flex flex-col gap-4">
+                        <h4 className="text-base font-bold text-center">Friend Registration: Pick your Seat</h4>
+                        
+                        <div className="flex gap-4">
+                          <input 
+                            type="text" 
+                            placeholder="Friend's Name" 
+                            value={friendName}
+                            onChange={(e) => setFriendName(e.target.value)}
+                            className="bg-navy border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none w-full"
+                          />
+                          <div className="bg-navy border border-white/10 rounded-lg p-2.5 text-xs text-white flex items-center whitespace-nowrap">
+                            Selected Seat: <strong className="text-pink ml-1">{selectedSeats.join(", ") || "None"}</strong>
+                          </div>
+                        </div>
+
+                        {/* Mini seat grid */}
+                        <div className="flex flex-col gap-2.5 items-center w-full max-w-sm mx-auto my-4">
+                          {['A','B','C','D','E'].map((row) => (
+                            <div key={row} className="flex gap-2">
+                              {[1,2,3,4,5,6,7,8].map((col) => {
+                                const code = `${row}${col}`;
+                                
+                                // check if occupied by group members
+                                const isGroupOccupied = gb.members.some(m => m.seats.includes(code));
+                                const isSelected = selectedSeats.includes(code);
+
+                                return (
+                                  <div
+                                    key={col}
+                                    onClick={() => !isGroupOccupied && handleSeatClick(row, col)}
+                                    className={`w-6 h-6 rounded text-[9px] font-bold flex items-center justify-center cursor-pointer transition-all ${
+                                      isGroupOccupied ? 'bg-purple text-white cursor-not-allowed' :
+                                      (isSelected ? 'bg-pink text-white scale-110 shadow-lg' : 'bg-emerald-600 text-white')
+                                    }`}
+                                  >
+                                    {col}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+
+                        <button type="submit" className="bg-purple text-white py-2.5 rounded-lg text-xs font-bold w-full">
+                          Lock My Seat & Join Plan
+                        </button>
+
+                      </form>
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* PAGE: PROFILE HUB */}
+            {page === 'profile' && (
+              <div>
+                {/* User card header */}
+                <div className="glass-panel p-6 mb-8 flex justify-between items-center flex-wrap gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-purple flex items-center justify-center font-bold text-xl">
+                      JD
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold">{user.fullName}</h2>
+                      <p className="text-xs text-gray-400">{user.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Rewards balance badge */}
+                  <div className="bg-gradient-to-r from-purple/20 to-pink/20 border border-purple/35 px-5 py-3 rounded-xl flex items-center gap-3">
+                    <i data-lucide="award" className="text-pink w-6 h-6"></i>
+                    <div>
+                      <span className="text-[10px] text-gray-400 block font-bold">REWARD POINTS BALANCE</span>
+                      <span className="text-lg font-black text-pink">{user.rewards} Tokens</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {/* Left Tab menu */}
+                  <div className="md:col-span-1 flex flex-col gap-2">
+                    <button className="bg-slatecard text-white text-left px-4 py-3 rounded-xl text-sm font-semibold border-l-4 border-pink">
+                      Your Ticket Orders
+                    </button>
+                    <button className="bg-slatecard/40 text-gray-400 text-left px-4 py-3 rounded-xl text-sm font-semibold hover:text-white">
+                      Reward Points Ledger
+                    </button>
+                    <button className="bg-slatecard/40 text-gray-400 text-left px-4 py-3 rounded-xl text-sm font-semibold hover:text-white">
+                      Purchased Gift Cards
+                    </button>
+                  </div>
+
+                  {/* Tab contents list */}
+                  <div className="md:col-span-2 flex flex-col gap-4">
+                    <h3 className="text-xl font-bold mb-2">My Bookings</h3>
+                    {orders.length === 0 ? (
+                      <p className="text-sm text-gray-400">No bookings created yet.</p>
+                    ) : (
+                      orders.map((order) => (
+                        <div key={order.id} className="glass-panel p-5 flex justify-between items-center flex-wrap gap-4">
+                          <div>
+                            <h4 className="text-base font-bold text-white">{order.title}</h4>
+                            <p className="text-xs text-gray-400 mt-0.5">{order.place}</p>
+                            <p className="text-xs text-gray-400">{order.date}</p>
+                            <p className="text-sm text-white mt-2">
+                              Seats: <strong className="text-purple">{order.seats}</strong>
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                              order.status === 'Confirmed' ? 'bg-emerald-600/20 text-emerald-500 border-emerald-600/30' : 'bg-yellow-600/20 text-yellow-500 border-yellow-600/30'
+                            }`}>
+                              {order.status}
+                            </span>
+                            <span className="text-base font-extrabold text-white">${order.price}</span>
+                            
+                            {/* Actions for unpaid reserved seats */}
+                            {order.status === 'Reserved' && (
+                              <button 
+                                onClick={() => {
+                                  // Mock pay
+                                  const updated = orders.map(o => o.id === order.id ? { ...o, status: "Confirmed", qr: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CineHub-${order.id}` } : o);
+                                  setOrders(updated);
+                                  alert("Payment Successful! Reservation confirmed.");
+                                }}
+                                className="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded"
+                              >
+                                Pay Ticket Now
+                              </button>
+                            )}
+
+                            {order.status === 'Confirmed' && order.qr && (
+                              <img src={order.qr} alt="Ticket QR code" className="w-16 h-16 rounded border border-white mt-1" />
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PAGE: ADMIN PANEL */}
+            {page === 'admin' && (
+              <div>
+                <h2 className="text-3xl font-black mb-6 flex items-center gap-2">
+                  <span>📊</span> CineHub Platform Control Panel
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                  <div className="glass-panel p-4">
+                    <span className="text-xs text-gray-400 font-semibold">Weekly Gross Revenue</span>
+                    <h3 className="text-2xl font-black mt-1 text-emerald-500">$3,240.00</h3>
+                  </div>
+                  <div className="glass-panel p-4">
+                    <span className="text-xs text-gray-400 font-semibold">Total Tickets Sold</span>
+                    <h3 className="text-2xl font-black mt-1 text-purple">148</h3>
+                  </div>
+                  <div className="glass-panel p-4">
+                    <span className="text-xs text-gray-400 font-semibold">Active Profiles</span>
+                    <h3 className="text-2xl font-black mt-1 text-pink">85</h3>
+                  </div>
+                  <div className="glass-panel p-4">
+                    <span className="text-xs text-gray-400 font-semibold">Avg Occupancy Rate</span>
+                    <h3 className="text-2xl font-black mt-1 text-yellow-500">73.4%</h3>
+                  </div>
+                </div>
+
+                {/* Simulated Chart */}
+                <div className="glass-panel p-6 mb-8">
+                  <h4 className="text-sm font-bold text-gray-400 mb-4">WEEKLY REVENUE ANALYTICS SUMMARY</h4>
+                  
+                  {/* CSS-based Bar chart mockup */}
+                  <div className="flex items-end justify-between h-44 pt-4 border-b border-white/10 gap-3">
+                    {[
+                      { day: "Mon", val: 400, ht: "h-20" },
+                      { day: "Tue", val: 300, ht: "h-14" },
+                      { day: "Wed", val: 500, ht: "h-24" },
+                      { day: "Thu", val: 450, ht: "h-20" },
+                      { day: "Fri", val: 800, ht: "h-36" },
+                      { day: "Sat", val: 1100, ht: "h-40" },
+                      { day: "Sun", val: 950, ht: "h-38" },
+                    ].map((d) => (
+                      <div key={d.day} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
+                        <span className="text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold">${d.val}</span>
+                        <div className={`w-full bg-gradient-to-t from-purple to-pink rounded-t ${d.ht} group-hover:brightness-125 transition-all`}></div>
+                        <span className="text-[10px] text-gray-400 font-semibold">{d.day}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Catalog items */}
+                <div className="glass-panel p-4">
+                  <h4 className="text-base font-bold mb-3">Inventory catalogs list</h4>
+                  <table className="w-full text-xs text-left">
+                    <thead>
+                      <tr className="border-b border-white/10 text-gray-400">
+                        <th className="py-2">Title</th>
+                        <th className="py-2">Language</th>
+                        <th className="py-2">Mood tag</th>
+                        <th className="py-2 text-right">Base Ticket Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {INITIAL_MOVIES.map(m => (
+                        <tr key={m.id} className="border-b border-white/5 font-semibold">
+                          <td className="py-2.5">{m.title}</td>
+                          <td className="py-2.5 text-gray-400">{m.language}</td>
+                          <td className="py-2.5"><span className="bg-purple/20 text-purple-300 px-2 py-0.5 rounded-full">{m.mood}</span></td>
+                          <td className="py-2.5 text-right text-pink">${m.price}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            )}
+
+          </main>
+
+          {/* FOOTER */}
+          <footer className="bg-[#090D1A] border-t border-white/5 px-6 py-8 mt-12 text-sm text-gray-400">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="text-gradient font-bold text-base mb-3">CineHub Customer Care</h4>
+                <p className="text-xs mb-2">Need assistance with your ticket or reservation? Contact us anytime.</p>
+                <div className="text-xs flex flex-col gap-1.5 text-white">
+                  <div>📞 Support Line: +1-800-CINE-HUB</div>
+                  <div>📞 Book by Phone: +1-800-BOOK-NOW</div>
+                  <div>✉️ Email: support@cinehub.com</div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-base mb-3 text-white">Social Media handles</h4>
+                <div className="flex gap-4">
+                  <span className="p-2 bg-white/5 rounded-full text-white cursor-pointer hover:bg-purple"><i data-lucide="facebook" className="w-4 h-4"></i></span>
+                  <span className="p-2 bg-white/5 rounded-full text-white cursor-pointer hover:bg-purple"><i data-lucide="instagram" className="w-4 h-4"></i></span>
+                  <span className="p-2 bg-white/5 rounded-full text-white cursor-pointer hover:bg-purple"><i data-lucide="twitter" className="w-4 h-4"></i></span>
+                  <span className="p-2 bg-white/5 rounded-full text-white cursor-pointer hover:bg-purple"><i data-lucide="youtube" className="w-4 h-4"></i></span>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-base mb-3 text-white">Quick Help & FAQs</h4>
+                <ul className="text-xs flex flex-col gap-2">
+                  <li className="hover:text-pink cursor-pointer">How to reserve seats (Book Later)?</li>
+                  <li className="hover:text-pink cursor-pointer">How does Group Booking Planner work?</li>
+                  <li className="hover:text-pink cursor-pointer">Redeeming Reward points & tokens</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto border-t border-white/5 mt-8 pt-4 flex justify-between flex-wrap text-xs">
+              <span>© 2026 CineHub Entertainment Ltd. All rights reserved.</span>
+              <div className="flex gap-4">
+                <span className="cursor-pointer hover:text-white">Privacy Policy</span>
+                <span className="cursor-pointer hover:text-white">Terms of Service</span>
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    // Divider helper
+    const DividerLine = () => <div className="border-t border-white/10 my-4"></div>;
+
+    // Render app
+    const rootElement = document.getElementById("root");
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<CineHubApp />);
+
+    // Initialize lucide icons after Babel compile renders DOM
+    setTimeout(() => {
+      lucide.createIcons();
+    }, 1000);
+  </script>
+</body>
+</html>
