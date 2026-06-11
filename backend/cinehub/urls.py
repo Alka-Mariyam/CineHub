@@ -19,7 +19,19 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from django.http import JsonResponse
+
+def api_root(request):
+    return JsonResponse({
+        "message": "CineHub API is running successfully! 🍿",
+        "endpoints": {
+            "admin": "/admin/",
+            "api": "/api/"
+        }
+    })
+
 urlpatterns = [
+    path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('apps.authentication.urls')),
     path('api/', include('apps.movies.urls')),
