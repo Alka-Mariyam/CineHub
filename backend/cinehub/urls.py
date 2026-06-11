@@ -21,17 +21,38 @@ from django.conf.urls.static import static
 
 from django.http import JsonResponse
 from django.core.management import call_command
+import threading
+
+seed_status = {"status": "Not started", "error": None}
+
+def run_seed_in_background():
+    global seed_status
+    seed_status["status"] = "Running"
+    try:
+        call_command('seed_demo_data')
+        seed_status["status"] = "Completed"
+    except Exception as e:
+        import traceback
+        seed_status["status"] = "Failed"
+        seed_status["error"] = str(e)
+        seed_status["trace"] = traceback.format_exc()
 
 def seed_db_view(request):
     key = request.GET.get('key') or request.POST.get('key')
     if key != 'cinehub_seed_2026':
         return JsonResponse({"error": "Unauthorized"}, status=401)
-    try:
-        call_command('seed_demo_data')
-        return JsonResponse({"status": "Database seeded successfully!"})
-    except Exception as e:
-        import traceback
-        return JsonResponse({"error": str(e), "trace": traceback.format_exc()}, status=500)
+    
+    action = request.GET.get('action')
+    if action == 'status':
+        return JsonResponse(seed_status)
+        
+    if seed_status["status"] == "Running":
+        return JsonResponse({"status": "Already running"})
+        
+    thread = threading.Thread(target=run_seed_in_background)
+    thread.daemon = True
+    thread.start()
+    return JsonResponse({"status": "Started seeding in background..."})
 
 def api_root(request):
     return JsonResponse({
