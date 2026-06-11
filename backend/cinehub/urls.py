@@ -20,6 +20,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from django.http import JsonResponse
+from django.core.management import call_command
+
+def seed_db_view(request):
+    key = request.GET.get('key') or request.POST.get('key')
+    if key != 'cinehub_seed_2026':
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+    try:
+        call_command('seed_demo_data')
+        return JsonResponse({"status": "Database seeded successfully!"})
+    except Exception as e:
+        import traceback
+        return JsonResponse({"error": str(e), "trace": traceback.format_exc()}, status=500)
 
 def api_root(request):
     return JsonResponse({
@@ -33,6 +45,7 @@ def api_root(request):
 urlpatterns = [
     path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
+    path('api/seed-db/', seed_db_view, name='seed_db'),
     path('api/auth/', include('apps.authentication.urls')),
     path('api/', include('apps.movies.urls')),
     path('api/', include('apps.events.urls')),
