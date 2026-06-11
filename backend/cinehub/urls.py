@@ -139,12 +139,26 @@ def seed_db_view(request):
         import traceback
         return JsonResponse({"error": str(e), "trace": traceback.format_exc()}, status=500)
 
+def db_check_view(request):
+    from django.conf import settings
+    from apps.movies.models import Movie, Show, Theatre
+    from django.db import connection
+    return JsonResponse({
+        "database_engine": settings.DATABASES['default']['ENGINE'],
+        "database_name": str(settings.DATABASES['default']['NAME']),
+        "connection_vendor": connection.vendor,
+        "movie_count": Movie.objects.count(),
+        "theatre_count": Theatre.objects.count(),
+        "show_count": Show.objects.count(),
+    })
+
 def api_root(request):
     return JsonResponse({
         "message": "CineHub API is running successfully! 🍿",
         "endpoints": {
             "admin": "/admin/",
-            "api": "/api/"
+            "api": "/api/",
+            "db_check": "/api/db-check/"
         }
     })
 
@@ -152,6 +166,7 @@ urlpatterns = [
     path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
     path('api/seed-db/', seed_db_view, name='seed_db'),
+    path('api/db-check/', db_check_view, name='db_check'),
     path('api/auth/', include('apps.authentication.urls')),
     path('api/', include('apps.movies.urls')),
     path('api/', include('apps.events.urls')),
