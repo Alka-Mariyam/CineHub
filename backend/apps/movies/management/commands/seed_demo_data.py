@@ -20,6 +20,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("🌱 Seeding CineHub demo data...")
 
+        # Clean up existing unused duplicate shows to prevent DB bloat and slow queries
+        self.stdout.write("🧹 Cleaning up unused duplicate shows from database...")
+        deleted_count, _ = Show.objects.filter(
+            bookings__isnull=True, 
+            reservations__isnull=True, 
+            group_bookings__isnull=True
+        ).delete()
+        self.stdout.write(f"🗑️ Deleted {deleted_count} unused duplicate shows.")
+
         # 1. Create Locations
         cities = [
             ("Maharashtra", "Mumbai"),
