@@ -21,7 +21,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import LocationDetection from './pages/LocationDetection';
 import PaymentSuccess from './pages/PaymentSuccess';
-import ManagerDashboard from './pages/ManagerDashboard';
+import BookingConfirmed from './pages/BookingConfirmed';
 
 import { fetchUserProfile } from './store';
 
@@ -77,6 +77,7 @@ const AppLayout = () => {
           <Route path="/checkout/:bookingId" element={<RequireLocation><CheckoutPage /></RequireLocation>} />
 
           <Route path="/payment-success/:bookingId" element={<RequireLocation><PaymentSuccess /></RequireLocation>} />
+          <Route path="/booking-confirmed/:bookingId" element={<RequireLocation><BookingConfirmed /></RequireLocation>} />
           <Route path="/group-booking/:inviteCode" element={<RequireLocation><GroupBookingPage /></RequireLocation>} />
           
           {/* User Profiles */}
