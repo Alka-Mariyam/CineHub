@@ -45,20 +45,11 @@ const Header = () => {
 
   // Categories list
   const categories = [
-    'Movies', 'Stream', 'Events', 'Plays', 'Sports',
-    'Activities', 'Venues', 'Offers', 'Others'
+    'Movies'
   ];
 
   const categoryIcons = {
-    'Movies': <Film size={15} />,
-    'Stream': <Play size={15} />,
-    'Events': <Music size={15} />,
-    'Plays': <Sparkles size={15} />,
-    'Sports': <Trophy size={15} />,
-    'Activities': <Compass size={15} />,
-    'Venues': <MapPin size={15} />,
-    'Offers': <Tag size={15} />,
-    'Others': <MoreHorizontal size={15} />
+    'Movies': <Film size={15} />
   };
 
   useEffect(() => {
