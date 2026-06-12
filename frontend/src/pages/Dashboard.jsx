@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import {
   Container, Grid, Box, Typography, Button, MenuItem, Select, InputLabel,
-  FormControl, Slider, Paper, useMediaQuery, IconButton
+  FormControl, Slider, Paper, useMediaQuery, IconButton, CircularProgress
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import GlassmorphicCard from '../components/GlassmorphicCard';
@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [sports, setSports] = useState([]);
   const [theatres, setTheatres] = useState([]);
   const [trendingMovies, setTrendingMovies] = useState([]);
+  const [allRecommendedMovies, setAllRecommendedMovies] = useState([]);
 
   // States for filters
   const [mood, setMood] = useState('');
@@ -118,6 +119,13 @@ const Dashboard = () => {
       .then((res) => {
         const list = res.data.results || res.data;
         if (list.length > 0) setTrendingMovies(list);
+      })
+      .catch(() => {});
+
+    // Load extra recommended movies for the bottom section
+    API.get('/movies/?is_recommended=True')
+      .then((res) => {
+        setAllRecommendedMovies(res.data.results || res.data);
       })
       .catch(() => {});
   }, []);
@@ -788,6 +796,56 @@ const Dashboard = () => {
           </Grid>
         </Grid>
       </Container>
+
+      {/* 4. Discover More Recommended Movies Section (at the bottom) */}
+      {category === 'Movies' && (
+        <Container maxWidth="lg" style={{ marginTop: '60px', marginBottom: '80px' }}>
+          <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={900}>
+              Discover <span className="text-gradient">More Movies</span> You May Like
+            </Typography>
+          </Box>
+          {allRecommendedMovies.length === 0 ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress size={30} style={{ color: '#EC4899' }} />
+            </Box>
+          ) : (
+            <Grid container spacing={3}>
+              {allRecommendedMovies.slice(0, 8).map((movie) => (
+                <Grid item xs={12} sm={6} md={3} key={`rec-${movie.id}`}>
+                  <GlassmorphicCard onClick={() => navigate(`/movie/${movie.id}`)}>
+                    <div style={{ position: 'relative', paddingBottom: '140%', overflow: 'hidden' }}>
+                      <img
+                        src={movie.poster}
+                        alt={movie.title}
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }}
+                        className="card-img-hover"
+                      />
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(11,15,25,0.95) 0%, rgba(11,15,25,0) 100%)', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box display="flex" alignItems="center" gap="4px">
+                          <Star size={14} color="#FACC15" fill="#FACC15" />
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: '#FACC15' }}>{movie.rating}</span>
+                          <span style={{ fontSize: '11px', color: '#94A3B8' }}>({movie.votes})</span>
+                        </Box>
+                      </div>
+                    </div>
+                    <Box p={2.5}>
+                      <Typography variant="h6" fontWeight={800} style={{ fontSize: '15px' }} noWrap>{movie.title}</Typography>
+                      <Typography variant="body2" color="textSecondary" style={{ fontSize: '12px', marginTop: '2px' }} noWrap>{movie.genre}</Typography>
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                        <Typography variant="caption" style={{ fontWeight: 800, color: '#EC4899', background: 'rgba(236,72,153,0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                          {movie.language}
+                        </Typography>
+                        <span style={{ fontSize: '14px', fontWeight: 900, color: '#FACC15' }}>₹{movie.price || '150'}</span>
+                      </Box>
+                    </Box>
+                  </GlassmorphicCard>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Container>
+      )}
     </Box>
   );
 };
