@@ -34,6 +34,7 @@ const Dashboard = () => {
   const [language, setLanguage] = useState('');
   const [genre, setGenre] = useState('');
   const [budget, setBudget] = useState(300);
+  const [tempBudget, setTempBudget] = useState(300);
   const [showDates, setShowDates] = useState('');
 
   // Hero banner state
@@ -396,11 +397,12 @@ const Dashboard = () => {
 
               <Box>
                 <Typography variant="body2" color="textSecondary" mb={1.5} display="flex" alignItems="center" gap="6px" fontWeight={600}>
-                  <IndianRupee size={14} color="#FACC15" /> Max Ticket Price: ₹{budget}
+                  <IndianRupee size={14} color="#FACC15" /> Max Ticket Price: ₹{tempBudget}
                 </Typography>
                 <Slider
-                  value={budget}
-                  onChange={(e, val) => setBudget(val)}
+                  value={tempBudget}
+                  onChange={(e, val) => setTempBudget(val)}
+                  onChangeCommitted={(e, val) => setBudget(val)}
                   min={120}
                   max={300}
                   step={5}
@@ -441,6 +443,7 @@ const Dashboard = () => {
                   setLanguage('');
                   setGenre('');
                   setBudget(300);
+                  setTempBudget(300);
                   setShowDates('');
                 }}
                 style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#FFFFFF', borderRadius: '8px', fontWeight: 700 }}

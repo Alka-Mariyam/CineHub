@@ -27,6 +27,22 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [cities, setCities] = useState(['Mumbai', 'Bengaluru', 'New Delhi', 'Kolkata']);
 
+  // Local state for debouncing search query
+  const [searchText, setSearchText] = useState(query);
+
+  useEffect(() => {
+    setSearchText(query);
+  }, [query]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchText !== query) {
+        dispatch(setSearchQuery(searchText));
+      }
+    }, 400); // 400ms debounce
+    return () => clearTimeout(handler);
+  }, [searchText, dispatch, query]);
+
   // Categories list
   const categories = [
     'Movies', 'Stream', 'Events', 'Plays', 'Sports',
@@ -109,8 +125,8 @@ const Header = () => {
                 size="small"
                 fullWidth
                 placeholder={`Search ${category}...`}
-                value={query}
-                onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -258,8 +274,8 @@ const Header = () => {
               size="small"
               fullWidth
               placeholder={`Search ${category}...`}
-              value={query}
-              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

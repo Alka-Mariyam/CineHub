@@ -73,7 +73,7 @@ class MovieViewSet(viewsets.ModelViewSet):
 
 
 class TheatreViewSet(viewsets.ModelViewSet):
-    queryset = Theatre.objects.all().order_by('name')
+    queryset = Theatre.objects.all().select_related('location').order_by('name')
     serializer_class = TheatreSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -89,7 +89,17 @@ class TheatreViewSet(viewsets.ModelViewSet):
 
 
 class ShowViewSet(viewsets.ModelViewSet):
-    queryset = Show.objects.all().order_by('start_time')
+    queryset = Show.objects.all().select_related(
+        'movie', 
+        'theatre', 
+        'theatre__location', 
+        'screen', 
+        'screen__theatre', 
+        'event', 
+        'sports_event', 
+        'venue', 
+        'venue__location'
+    ).order_by('start_time')
     serializer_class = ShowSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
@@ -118,7 +128,7 @@ class ShowViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all().order_by('-created_at')
+    queryset = Review.objects.all().select_related('user', 'movie', 'event', 'sports_event').order_by('-created_at')
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]

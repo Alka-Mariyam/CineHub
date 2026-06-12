@@ -5,7 +5,7 @@ from .models import Venue, Event, SportsEvent
 from .serializers import VenueSerializer, EventSerializer, SportsEventSerializer
 
 class VenueViewSet(viewsets.ModelViewSet):
-    queryset = Venue.objects.all().order_by('name')
+    queryset = Venue.objects.all().select_related('location').order_by('name')
     serializer_class = VenueSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['location']
@@ -20,7 +20,7 @@ class VenueViewSet(viewsets.ModelViewSet):
 
 
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all().order_by('-date')
+    queryset = Event.objects.all().select_related('venue', 'venue__location').order_by('-date')
     serializer_class = EventSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category']
@@ -53,7 +53,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
 
 class SportsEventViewSet(viewsets.ModelViewSet):
-    queryset = SportsEvent.objects.all().order_by('-date')
+    queryset = SportsEvent.objects.all().select_related('venue', 'venue__location').order_by('-date')
     serializer_class = SportsEventSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'stadium_name']
