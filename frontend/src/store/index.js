@@ -4,7 +4,7 @@ import axios from 'axios';
 // Set up base Axios config
 const base = import.meta.env.VITE_BACKEND_URL || import.meta.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8000');
 const API = axios.create({
-  baseURL: base.endsWith('/api') ? base : `${base.replace(/\/$/, '')}/api`
+  baseURL: base.endsWith('/api') ? base : `${base.replace(/\/+$/, '')}/api`
 });
 
 // Interceptor to inject JWT Token
@@ -28,7 +28,7 @@ API.interceptors.response.use(
       const refreshToken = localStorage.getItem('refresh_token');
       if (refreshToken) {
         try {
-          const refreshRes = await axios.post(`${base.endsWith('/api') ? base : `${base.replace(/\\/$/, '')}/api`}/auth/token/refresh/`, { refresh: refreshToken });
+          const refreshRes = await axios.post(`${base.endsWith('/api') ? base : `${base.replace(/\/+$/, '')}/api`}/auth/token/refresh/`, { refresh: refreshToken });
           const newAccess = refreshRes.data.access;
           localStorage.setItem('access_token', newAccess);
           API.defaults.headers.common['Authorization'] = `Bearer ${newAccess}`;

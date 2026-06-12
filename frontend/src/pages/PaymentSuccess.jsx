@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Container, Grid, Box, Typography, Button, Paper, Divider, CircularProgress, Alert } from '@mui/material';
+import GlassmorphicCard from '../components/GlassmorphicCard';
 import { Mail, ChevronRight, Calendar, Clock, MapPin, Armchair, Ticket, CheckCircle2, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { API, fetchUserProfile } from '../store';
@@ -16,6 +17,8 @@ const PaymentSuccess = () => {
   const [loading, setLoading] = useState(true);
   const [emailSent, setEmailSent] = useState(false);
   const [error, setError] = useState('');
+  const [recommendedMovies, setRecommendedMovies] = useState([]);
+  const [loadingMovies, setLoadingMovies] = useState(false);
 
   const fetchBooking = async () => {
     try {
@@ -32,6 +35,22 @@ const PaymentSuccess = () => {
     fetchBooking();
     dispatch(fetchUserProfile());
   }, [bookingId]);
+
+  useEffect(() => {
+    // Fetch recommended movies for the user city
+    const fetchRecommended = async () => {
+      try {
+        const city = booking?.show_detail?.theatre_detail?.city || 'Mumbai';
+        const res = await API.get(`/movies/?city=${city}&is_recommended=True&max_price=300`);
+        setRecommendedMovies(res.data.results || res.data);
+      } catch (e) {
+        // ignore errors
+      }
+    };
+    if (booking) {
+      fetchRecommended();
+    }
+  }, [booking]);
 
   const resendEmail = async () => {
     try {
@@ -238,6 +257,31 @@ const PaymentSuccess = () => {
               ) : (
                 <Box p={4}>
                   <CircularProgress size={30} style={{ color: '#EC4899' }} />
+                </Box>
+              )}
+              {/* Recommended Movies Section */}
+              {recommendedMovies.length > 0 && (
+                <Box mt={4} width="100%" maxWidth="600px">
+                  <Typography variant="h6" fontWeight={800} mb={2} textAlign="center" className="text-gradient">Recommended Movies</Typography>
+                  <Grid container spacing={2}>
+                    {recommendedMovies.slice(0, 6).map((movie) => (
+                      <Grid item xs={12} sm={6} key={movie.id}>
+                        <GlassmorphicCard onClick={() => navigate(`/movie/${movie.id}`)}>
+                          <Box style={{ position: 'relative', paddingBottom: '140%', overflow: 'hidden' }}>
+                            <img src={movie.poster} alt={movie.title} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </Box>
+                          <Box p={2}>
+                            <Typography variant="subtitle1" fontWeight={800} noWrap>{movie.title}</Typography>
+                            <Typography variant="body2" color="textSecondary" noWrap>{movie.genre}</Typography>
+                            <Box display="flex" justifyContent="space-between" mt={1}>
+                              <Typography variant="caption" color="primary">₹{movie.price || '150'}</Typography>
+                              <Button variant="contained" size="small" className="bg-gradient-primary" onClick={(e) => { e.stopPropagation(); navigate(`/movie/${movie.id}`); }}>Book</Button>
+                            </Box>
+                          </Box>
+                        </GlassmorphicCard>
+                      </Grid>
+                    ))}
+                  </Grid>
                 </Box>
               )}
 
