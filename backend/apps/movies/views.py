@@ -336,17 +336,3 @@ class ManagerQRVerificationView(APIView):
             return Response({"error": "Booking details not found or doesn't belong to your theatre."}, status=status.HTTP_404_NOT_FOUND)
 
 
-from django.core.management import call_command
-from rest_framework.permissions import AllowAny
-
-class TempSeedDBView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        try:
-            call_command('seed_demo_data')
-            return Response({"status": "seeding completed successfully"}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
