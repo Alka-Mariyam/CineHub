@@ -71,6 +71,7 @@ class Command(BaseCommand):
                 "mood": "Excited",
                 "is_trending": True,
                 "is_new_release": True,
+                "is_recommended": True,
             },
             {
                 "title": "Dil Se Phir",
@@ -164,6 +165,7 @@ class Command(BaseCommand):
                 "crew": [{"name": "Rohit Shetty", "role": "Director", "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100"}],
                 "mood": "Happy",
                 "is_most_booked": True,
+                "is_recommended": True,
             },
             {
                 "title": "Drishyam 3: The Coverup",
@@ -183,6 +185,7 @@ class Command(BaseCommand):
                 "mood": "Excited",
                 "is_trending": True,
                 "is_new_release": True,
+                "is_recommended": True,
             },
             {
                 "title": "Kumbalangi Nights: Reunion",
@@ -257,6 +260,7 @@ class Command(BaseCommand):
                 "mood": "Excited",
                 "is_trending": True,
                 "is_new_release": True,
+                "is_recommended": True,
             },
             {
                 "title": "RRR: Rise Roar Revolt",
@@ -297,6 +301,7 @@ class Command(BaseCommand):
                 "mood": "Excited",
                 "is_trending": True,
                 "is_most_booked": True,
+                "is_recommended": True,
             },
             {
                 "title": "Pushpa: The Rise - Part 1",
@@ -495,7 +500,7 @@ class Command(BaseCommand):
         for movie in created_movies:
             for city_name, city_theatres in theatres_by_city.items():
                 for theatre in city_theatres[:2]:  # 2 theatres per city
-                    for day_offset in range(3, 15):  # 12 days of shows
+                    for day_offset in range(0, 14):  # 14 days of shows starting today
                         num_shows = random.randint(2, 3)
                         chosen_times = random.sample(show_times, num_shows)
                         for hour in chosen_times:

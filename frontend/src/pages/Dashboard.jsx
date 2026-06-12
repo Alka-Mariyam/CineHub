@@ -65,8 +65,12 @@ const Dashboard = () => {
       dateParams = `&start_date=${satStr}&end_date=${sunStr}`;
     }
 
-    // Fetch Movies (Only recommended movies to improve loading speed)
-    let movieUrl = `/movies/?city=${selectedCity}&is_recommended=True`;
+    // Fetch Movies (Only recommended by default when no filters are active to speed up page load)
+    let movieUrl = `/movies/?city=${selectedCity}`;
+    const hasActiveFilters = mood || language || genre || query || (budget !== 300) || showDates;
+    if (!hasActiveFilters) {
+      movieUrl += '&is_recommended=True';
+    }
     if (mood) movieUrl += `&mood=${mood}`;
     if (language) movieUrl += `&language=${language}`;
     if (genre) movieUrl += `&genre=${genre}`;
