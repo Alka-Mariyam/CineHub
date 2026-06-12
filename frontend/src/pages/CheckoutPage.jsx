@@ -333,9 +333,9 @@ const CheckoutPage = () => {
               <Box mt={3} p={3} className="glass-panel" display="flex" alignItems="flex-start" gap="14px" style={{ border: '1px solid rgba(16, 185, 129, 0.2)' }}>
                 <CheckCircle2 size={24} color="#10B981" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <Box>
-                  <Typography variant="h6" fontWeight={800} style={{ color: '#10B981' }}>Booking Confirmed! 🎉</Typography>
+                  <Typography variant="h6" fontWeight={800} style={{ color: '#10B981' }}>Successful Payment & Booking Confirmed! 🎉</Typography>
                   <Typography variant="body2" color="textSecondary" mt={0.5}>
-                    Booking Confirmed! A confirmation email with your QR ticket has been sent to your registered email address.
+                    Successful Payment & Booking Confirmed! A confirmation email with your QR ticket has been sent to your registered email address.
                   </Typography>
                 </Box>
               </Box>

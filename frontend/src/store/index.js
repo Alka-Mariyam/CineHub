@@ -18,6 +18,35 @@ API.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+// Interceptor to handle token refresh on 401 responses
+API.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        try {
+          const refreshRes = await axios.post(`${base.endsWith('/api') ? base : `${base.replace(/\\/$/, '')}/api`}/auth/token/refresh/`, { refresh: refreshToken });
+          const newAccess = refreshRes.data.access;
+          localStorage.setItem('access_token', newAccess);
+          API.defaults.headers.common['Authorization'] = `Bearer ${newAccess}`;
+          originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
+          return API(originalRequest);
+        } catch (e) {
+          // Refresh failed, clear auth and redirect to login
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+
 // Async Thunks
 export const registerUser = createAsyncThunk('auth/register', async (userData, thunkAPI) => {
   try {

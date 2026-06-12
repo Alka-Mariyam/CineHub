@@ -101,7 +101,7 @@ const PaymentSuccess = () => {
               <CheckCircle2 size={40} color="#10B981" />
             </div>
             <Typography variant="h4" fontWeight={900} className="text-gradient" mt={1}>
-              Booking Confirmed!
+              Successful Payment & Booking Confirmed!
             </Typography>
             <Typography variant="body2" color="textSecondary">
               Your payment was processed successfully. Have a great show!

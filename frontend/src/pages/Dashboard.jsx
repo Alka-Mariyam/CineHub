@@ -28,6 +28,7 @@ const Dashboard = () => {
   const sports = [];
   const theatres = [];
   const [trendingMovies, setTrendingMovies] = useState([]);
+  const [loadingMovies, setLoadingMovies] = useState(false);
 
   // States for filters
   const [mood, setMood] = useState('');
@@ -78,11 +79,15 @@ const Dashboard = () => {
     movieUrl += `&max_price=${budget}`;
     if (dateParams) movieUrl += dateParams;
     
+    setLoadingMovies(true);
     API.get(movieUrl)
       .then((res) => {
         setMovies(res.data.results || res.data);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setLoadingMovies(false);
+      });
 
   }, [selectedCity, query, mood, language, genre, budget, showDates]);
 
@@ -441,7 +446,11 @@ const Dashboard = () => {
 
             {/* Movies list */}
             {category === 'Movies' && (
-              movies.length === 0 ? (
+              loadingMovies ? (
+                <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+                  <CircularProgress />
+                </Box>
+              ) : movies.length === 0 ? (
                 <NoResultsFound />
               ) : (
                 <Grid container spacing={3}>

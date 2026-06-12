@@ -539,7 +539,7 @@ class StripeCheckoutView(APIView):
 
         # Final price to charge
         total_discount = promo_discount + gift_card_discount + points_discount
-        final_price = Decimal(max(float(subtotal) - total_discount, 0.0))
+        final_price = Decimal(str(round(max(float(subtotal) - total_discount, 0.0), 2)))
 
         # If final_price is 0, we can complete the booking immediately
         if final_price <= 0:
@@ -561,11 +561,15 @@ class StripeCheckoutView(APIView):
                 # Update seats to Booked
                 seats_list = [s.strip() for s in booking.seats_display.split(',')]
                 for s_code in seats_list:
-                    row = s_code[0]
-                    col = int(s_code[1:])
-                    Seat.objects.filter(show=show, row_label=row, column_number=col).update(
-                        status='Booked', reserved_by=None, reserved_until=None
-                    )
+                    if len(s_code) >= 2:
+                        row = s_code[0]
+                        try:
+                            col = int(s_code[1:])
+                            Seat.objects.filter(show=show, row_label=row, column_number=col).update(
+                                status='Booked', reserved_by=None, reserved_until=None
+                            )
+                        except ValueError:
+                            pass
                 
                 # Update GroupBooking
                 group_booking = GroupBooking.objects.filter(booking=booking).first()
@@ -694,11 +698,15 @@ class StripeCheckoutView(APIView):
 
                 seats_list = [s.strip() for s in booking.seats_display.split(',')]
                 for s_code in seats_list:
-                    row = s_code[0]
-                    col = int(s_code[1:])
-                    Seat.objects.filter(show=show, row_label=row, column_number=col).update(
-                        status='Booked', reserved_by=None, reserved_until=None
-                    )
+                    if len(s_code) >= 2:
+                        row = s_code[0]
+                        try:
+                            col = int(s_code[1:])
+                            Seat.objects.filter(show=show, row_label=row, column_number=col).update(
+                                status='Booked', reserved_by=None, reserved_until=None
+                            )
+                        except ValueError:
+                            pass
                 
                 group_booking = GroupBooking.objects.filter(booking=booking).first()
                 if group_booking:
@@ -847,7 +855,7 @@ class StripeConfirmView(APIView):
             points_discount = rules.get(str(pts_to_redeem), 0)
 
         total_discount = promo_discount + gift_card_discount + points_discount
-        final_price = Decimal(max(float(subtotal) - total_discount, 0.0))
+        final_price = Decimal(str(round(max(float(subtotal) - total_discount, 0.0), 2)))
 
         with transaction.atomic():
             payment = Payment.objects.create(
@@ -866,11 +874,15 @@ class StripeConfirmView(APIView):
 
             seats_list = [s.strip() for s in booking.seats_display.split(',')]
             for s_code in seats_list:
-                row = s_code[0]
-                col = int(s_code[1:])
-                Seat.objects.filter(show=show, row_label=row, column_number=col).update(
-                    status='Booked', reserved_by=None, reserved_until=None
-                )
+                if len(s_code) >= 2:
+                    row = s_code[0]
+                    try:
+                        col = int(s_code[1:])
+                        Seat.objects.filter(show=show, row_label=row, column_number=col).update(
+                            status='Booked', reserved_by=None, reserved_until=None
+                        )
+                    except ValueError:
+                        pass
             
             group_booking = GroupBooking.objects.filter(booking=booking).first()
             if group_booking:
