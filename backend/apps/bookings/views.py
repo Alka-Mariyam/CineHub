@@ -135,9 +135,14 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        qs = Booking.objects.select_related(
+            'user', 'show', 'show__movie', 'show__theatre', 'show__theatre__location',
+            'show__screen', 'show__screen__theatre', 'show__event', 'show__sports_event',
+            'show__venue', 'show__venue__location'
+        ).order_by('-created_at')
         if user.is_staff:
-            return Booking.objects.all()
-        return Booking.objects.filter(user=user)
+            return qs
+        return qs.filter(user=user)
 
 
 class SeatLayoutView(APIView):
@@ -1114,11 +1119,16 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        qs = Booking.objects.select_related(
+            'user', 'show', 'show__movie', 'show__theatre', 'show__theatre__location',
+            'show__screen', 'show__screen__theatre', 'show__event', 'show__sports_event',
+            'show__venue', 'show__venue__location'
+        ).order_by('-created_at')
         if user.role == 'Admin' or user.is_staff:
-            return Booking.objects.all().order_by('-created_at')
+            return qs
         elif user.role == 'Manager':
-            return Booking.objects.filter(show__theatre__manager=user).order_by('-created_at')
-        return Booking.objects.filter(user=user).order_by('-created_at')
+            return qs.filter(show__theatre__manager=user)
+        return qs.filter(user=user)
 
 
 class ValidatePromoView(APIView):

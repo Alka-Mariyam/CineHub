@@ -234,7 +234,10 @@ class WatchlistViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Watchlist.objects.filter(user=self.request.user).order_by('-created_at')
+        return Watchlist.objects.filter(user=self.request.user).select_related(
+            'movie', 'event', 'event__venue', 'event__venue__location',
+            'sports_event', 'sports_event__venue', 'sports_event__venue__location'
+        ).order_by('-created_at')
 
     def perform_create(self, serializer):
         # Prevent duplicate watchlist entries
@@ -261,10 +264,11 @@ class ScreenViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        qs = Screen.objects.all().select_related('theatre', 'theatre__location')
         if user.role == 'Admin' or user.is_staff:
-            return Screen.objects.all()
+            return qs
         elif user.role == 'Manager':
-            return Screen.objects.filter(theatre__manager=user)
+            return qs.filter(theatre__manager=user)
         return Screen.objects.none()
 
     def perform_create(self, serializer):
