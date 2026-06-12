@@ -24,9 +24,9 @@ const Dashboard = () => {
 
   // States for list data
   const [movies, setMovies] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [sports, setSports] = useState([]);
-  const [theatres, setTheatres] = useState([]);
+  const events = [];
+  const sports = [];
+  const theatres = [];
   const [trendingMovies, setTrendingMovies] = useState([]);
 
   // States for filters
@@ -84,36 +84,6 @@ const Dashboard = () => {
       })
       .catch(() => {});
 
-    // Fetch Events
-    let eventUrl = `/events/?city=${selectedCity}`;
-    if (query) eventUrl += `&search=${query}`;
-    eventUrl += `&max_price=${budget}`;
-    if (dateParams) eventUrl += dateParams;
-    
-    API.get(eventUrl)
-      .then((res) => {
-        setEvents(res.data.results || res.data);
-      })
-      .catch(() => {});
-
-    // Fetch Sports
-    let sportsUrl = `/sports/?city=${selectedCity}`;
-    if (query) sportsUrl += `&search=${query}`;
-    sportsUrl += `&max_price=${budget}`;
-    if (dateParams) sportsUrl += dateParams;
-
-    API.get(sportsUrl)
-      .then((res) => {
-        setSports(res.data.results || res.data);
-      })
-      .catch(() => {});
-
-    // Fetch Theatres in the selected city
-    API.get(`/theatres/?city=${selectedCity}`)
-      .then((res) => {
-        setTheatres(res.data.results || res.data);
-      })
-      .catch(() => {});
   }, [selectedCity, query, mood, language, genre, budget, showDates]);
 
   useEffect(() => {
