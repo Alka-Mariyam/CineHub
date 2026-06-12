@@ -2,7 +2,7 @@ import { configureStore, createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios';
 
 // Set up base Axios config
-const base = import.meta.env.VITE_BACKEND_URL || import.meta.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8000');
+const base = import.meta.env.VITE_BACKEND_URL || 'https://cinehub-backend-w5mv.onrender.com';
 const API = axios.create({
   baseURL: base.endsWith('/api') ? base : `${base.replace(/\/+$/, '')}/api`
 });

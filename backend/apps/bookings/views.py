@@ -13,8 +13,11 @@ import uuid
 import base64
 from email.mime.image import MIMEImage
 import stripe
+import logging
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+logger = logging.getLogger(__name__)
 
 from apps.movies.models import Show, Theatre, Screen, Movie
 from apps.authentication.models import RewardPoints, Notification
@@ -670,7 +673,7 @@ class StripeCheckoutView(APIView):
                     'quantity': 1,
                 }],
                 mode='payment',
-                success_url=f"{origin}/checkout/{booking.booking_id}?session_id={{CHECKOUT_SESSION_ID}}",
+                success_url=f"{origin}/payment-success/{booking.booking_id}?session_id={{CHECKOUT_SESSION_ID}}",
                 cancel_url=f"{origin}/checkout/{booking.booking_id}",
                 metadata={
                     'booking_id': booking.booking_id,
@@ -725,11 +728,17 @@ class StripeCheckoutView(APIView):
                         pass
 
                 if redeem_points and points_discount > 0:
-                    RewardPoints.objects.create(
-                        user=request.user,
-                        points=-pts_to_redeem,
-                        description=f"Redeemed CinePoints for Booking {booking.booking_id}"
-                    )
+                    try:
+                        pts_to_redeem = int(redeem_points)
+                    except (ValueError, TypeError):
+                        pts_to_redeem = 0
+                    if pts_to_redeem > 0:
+                        RewardPoints.objects.create(
+                            user=request.user,
+                            points=-pts_to_redeem,
+                            description=f"Redeemed CinePoints for Booking {booking.booking_id}"
+                        )
+
 
                 is_first_booking = Booking.objects.filter(user=request.user, status='Confirmed').exclude(booking_id=booking.booking_id).count() == 0
                 points_earned = config.points_per_booking
@@ -816,12 +825,14 @@ class StripeConfirmView(APIView):
         promo_code = (session_metadata.get('promo_code') or '').upper().strip()
         gift_card_code = (session_metadata.get('gift_card_code') or '').upper().strip()
         
+        # Safely extract points to redeem – non‑numeric values default to 0
         try:
             pts_to_redeem = int(session_metadata.get('redeem_points', 0))
         except (ValueError, TypeError):
             pts_to_redeem = 0
 
-        base_price = booking.total_price
+        # Ensure total_price is a Decimal; fallback to 0 if missing
+        base_price = booking.total_price if booking.total_price is not None else Decimal('0')
         convenience_charge = Decimal('25.00')
         gst = Decimal('4.50')
         subtotal = base_price + convenience_charge + gst
@@ -850,8 +861,10 @@ class StripeConfirmView(APIView):
                 pass
 
         points_discount = 0
+        # Apply points discount only if a valid redemption tier is provided
         if pts_to_redeem in [100, 250, 500]:
-            rules = config.redemption_rules
+            # Guard against mis‑configured redemption_rules
+            rules = getattr(config, 'redemption_rules', {}) or {}
             points_discount = rules.get(str(pts_to_redeem), 0)
 
         total_discount = promo_discount + gift_card_discount + points_discount
@@ -874,15 +887,17 @@ class StripeConfirmView(APIView):
 
             seats_list = [s.strip() for s in booking.seats_display.split(',')]
             for s_code in seats_list:
-                if len(s_code) >= 2:
-                    row = s_code[0]
-                    try:
-                        col = int(s_code[1:])
-                        Seat.objects.filter(show=show, row_label=row, column_number=col).update(
-                            status='Booked', reserved_by=None, reserved_until=None
-                        )
-                    except ValueError:
-                        pass
+                # Defensive seat parsing – skip malformed codes
+                if len(s_code) < 2:
+                    continue
+                row = s_code[0]
+                col_part = s_code[1:]
+                if not col_part.isdigit():
+                    continue
+                col = int(col_part)
+                Seat.objects.filter(show=show, row_label=row, column_number=col).update(
+                    status='Booked', reserved_by=None, reserved_until=None
+                )
             
             group_booking = GroupBooking.objects.filter(booking=booking).first()
             if group_booking:
