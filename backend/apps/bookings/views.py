@@ -547,6 +547,11 @@ class StripeCheckoutView(APIView):
         # If final_price is 0, we can complete the booking immediately
         if final_price <= 0:
             with transaction.atomic():
+                # Construct absolute URLs for Stripe redirects using FRONTEND_URL setting
+                from django.conf import settings
+                frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+                success_url = f"{frontend_url}/booking-confirmed/{booking.booking_id}?session_id={{CHECKOUT_SESSION_ID}}"
+                cancel_url = f"{frontend_url}/checkout/{booking.booking_id}"
                 # Perform the booking confirmation
                 payment = Payment.objects.create(
                     booking=booking,
@@ -646,19 +651,12 @@ class StripeCheckoutView(APIView):
             amount_in_cents = int(final_price * 100)
             show_title = show.movie.title if show.movie else (show.event.title if show.event else show.sports_event.title)
             
-            # Determine dynamic host/origin to support local/ngrok/tunnel/custom domain
-            origin = request.headers.get('Origin') or request.META.get('HTTP_REFERER')
-            if origin:
-                if "://" in origin:
-                    parts = origin.split("://")
-                    protocol = parts[0]
-                    host_part = parts[1].split('/')[0]
-                    origin = f"{protocol}://{host_part}"
-                else:
-                    origin = origin.split('/')[0]
-            else:
-                origin = "http://localhost:5173"
-
+            # Construct absolute URLs for Stripe redirects using FRONTEND_URL setting
+            from django.conf import settings
+            frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+            success_url = f"{frontend_url}/booking-confirmed/{booking.booking_id}?session_id={{CHECKOUT_SESSION_ID}}"
+            cancel_url = f"{frontend_url}/checkout/{booking.booking_id}"
+            
             session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
@@ -673,8 +671,8 @@ class StripeCheckoutView(APIView):
                     'quantity': 1,
                 }],
                 mode='payment',
-                success_url=f"{origin}/checkout/{booking.booking_id}?session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=f"{origin}/checkout/{booking.booking_id}",
+                success_url=success_url,
+                cancel_url=cancel_url,
                 metadata={
                     'booking_id': booking.booking_id,
                     'promo_code': promo_code or '',

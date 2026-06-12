@@ -222,6 +222,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'alka70552@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'nqpupttezbvtydte')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'CineHub <alka70552@gmail.com>')
 
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://cinehub-frontend-9q21ol44r-alka-mariyam-s-projects.vercel.app')
 # WhiteNoise static files storage
 STORAGES = {
     "default": {
