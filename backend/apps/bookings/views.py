@@ -673,7 +673,7 @@ class StripeCheckoutView(APIView):
                     'quantity': 1,
                 }],
                 mode='payment',
-                success_url=f"{origin}/payment-success/{booking.booking_id}?session_id={{CHECKOUT_SESSION_ID}}",
+                success_url=f"{origin}/checkout/{booking.booking_id}?session_id={{CHECKOUT_SESSION_ID}}",
                 cancel_url=f"{origin}/checkout/{booking.booking_id}",
                 metadata={
                     'booking_id': booking.booking_id,
