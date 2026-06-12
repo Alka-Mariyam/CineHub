@@ -203,9 +203,11 @@ class ReserveSeatsView(APIView):
     def post(self, request):
         show_id = request.data.get('show')
         seats_list = request.data.get('seats') # e.g. ["A1", "A2"]
+        if isinstance(seats_list, str):
+            seats_list = [s.strip() for s in seats_list.split(',') if s.strip()]
 
-        if not show_id or not seats_list:
-            return Response({"error": "Show and seats list are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not show_id or not seats_list or not isinstance(seats_list, list):
+            return Response({"error": "Show and a valid seats list are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             show = Show.objects.get(id=show_id)
@@ -259,6 +261,14 @@ class ReserveSeatsView(APIView):
             s.reserved_by = request.user
             s.reserved_until = expires_at
             s.save()
+
+        # Define email subject and message
+        show_title = show.movie.title if show.movie else (show.event.title if show.event else show.sports_event.title)
+        subject = f"Seats Reserved: {show_title}"
+        message = f"Hi {request.user.full_name},\n\nYour reservation for {show_title} is confirmed.\n" \
+                  f"Seats: {booking.seats_display}\n" \
+                  f"Please complete your payment before {expires_at.strftime('%a, %d %b %Y %I:%M %p')}.\n\n" \
+                  f"Thanks,\nCineHub Team"
 
         # Send Email notification asynchronously in a background thread to avoid blocking requests
         import threading

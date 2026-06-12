@@ -299,6 +299,24 @@ class CineHubBookingSystemTests(TestCase):
             booking.refresh_from_db()
             self.assertEqual(booking.status, "Confirmed")
 
+    def test_reserve_seats_api(self):
+        from rest_framework.test import APIClient
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        
+        response = client.post('/api/reserve/', {
+            "show": self.show.id,
+            "seats": ["A1", "A2"]
+        }, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn("booking", response.data)
+        self.assertIn("reservation", response.data)
+        
+        self.seat_a1.refresh_from_db()
+        self.seat_a2.refresh_from_db()
+        self.assertEqual(self.seat_a1.status, "Reserved")
+        self.assertEqual(self.seat_a2.status, "Reserved")
+
 
 class CineHubAdminSystemTests(TestCase):
     def setUp(self):
