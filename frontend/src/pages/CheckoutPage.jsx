@@ -61,7 +61,7 @@ const CheckoutPage = () => {
       })
         .then(() => {
           dispatch(fetchUserProfile());
-          navigate(`/payment-success/${bookingId}`, { replace: true });
+          navigate(`/booking-confirmed/${bookingId}`, { replace: true });
         })
         .catch((err) => {
           console.error("Stripe confirmation error:", err);
@@ -148,7 +148,7 @@ const CheckoutPage = () => {
           window.location.href = res.data.session_url;
         } else if (res.data.success) {
           dispatch(fetchUserProfile());
-          navigate(`/payment-success/${bookingId}`);
+          navigate(`/booking-confirmed/${bookingId}`);
         }
       })
       .catch((err) => {

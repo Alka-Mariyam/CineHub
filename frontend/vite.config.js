@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export default defineConfig(({ mode }) => {
   const backendUrl = process.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
 
   return {
+    resolve: {
+      extensions: ['.js', '.jsx', '.json']
+    },
     plugins: [react()],
     server: {
       port: 5173,

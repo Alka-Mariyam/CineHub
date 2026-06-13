@@ -21,7 +21,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import LocationDetection from './pages/LocationDetection';
 import PaymentSuccess from './pages/PaymentSuccess';
-import BookingConfirmed from './pages/BookingConfirmed';
+import BookingConfirmed from './pages/BookingConfirmed.jsx';
 
 import { fetchUserProfile } from './store';
 
